@@ -77,7 +77,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) 
 		pack   *PipelinePack
 		values = make(map[string]string)
 		val    string
-		varMatcher, _ = regexp.Compile("%\\w+%")
+		//varMatcher, _ = regexp.Compile("%\\w+%")
 	)
 
 	inChan := fr.InChan()
