@@ -99,22 +99,14 @@ func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) 
 			values[field.GetName()] = val
 		}
 		
-		hf.url = varMatcher.ReplaceAllStringFunc(formatRegexp,
-			func(matchWord string) string {
-				// Remove the preceding and trailing %
-				m := matchWord[1 : len(matchWord)-1]
-				if repl, ok := values[m]; ok {
-					return repl
-				}
-				return fmt.Sprintf("<%s>", m)
-			})
+		hf.url = InterpolateString(hf.url, values)
 		
 		if success = hf.request(fr, hf.Match); success {
-			// changedmessage to success
-			pack.Message.SetPayload("success")
+			// change message to success
+			pack.Message.SetType("http.success")
 		} else{
 			// change message to failure
-			pack.Message.SetPayload("failure")
+			pack.Message.SetType("http.failure")
 		}
 	}
 
@@ -134,12 +126,13 @@ func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regexToCheckFor) (bo
 		URL:    hf.url,
 		Header: hf.Headers,
 	}
+	
 	if hf.useBasicAuth {
 		req.SetBasicAuth(hf.Username, hf.Password)
 	}
 
 	if resp, err = hf.client.Do(req); err != nil {
-		return success = false
+		return false
 	}
 	defer resp.Body.Close()
 
@@ -150,14 +143,12 @@ func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regexToCheckFor) (bo
 		}
 	
 	if resp.StatusCode >= 400 {
-		success = false
+		return false
 	}
 	
-	if matched, err = regexp.MatchString(regexToCheckFor, string(body)); matched {
-		success = true
-	}
-	
-	return success
+	matched, err = regexp.MatchString(regexToCheckFor, string(body))
+     
+	return matched
 }
 
 func init() {
