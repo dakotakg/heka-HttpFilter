@@ -124,12 +124,12 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	return
 }
 
-func (hf *HttpFilter) request(fr FilterRunner, regex formatRegexp) (matcherd bool) {
+func (hf *HttpFilter) request(fr FilterRunner, regex re *regexp.Regexp) (matched bool) {
 	var(
 		resp       *http.Response
 		reader     io.Reader
 		readCloser io.ReadCloser
-		error      err
+		err        error
 	)
 
 	req := &http.Request{
