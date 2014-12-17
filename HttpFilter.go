@@ -9,10 +9,11 @@ import (
 	"github.com/mozilla-services/heka/plugins/tcp"
 	"net/url"
 	"regexp"
-	"bytes"
 	"errors"
 	"strings"
 	"time"
+	"io"
+	"io/ioutil"
 )
 
 // Heka Filter plugin that can send a http request
@@ -109,7 +110,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) 
 			values[field.GetName()] = val
 		}
 		
-		hf.url = InterpolateString(hf.url, values)
+		hf.url = InterpolateString(url.parse(hf.address), values)
 		
 		if success = hf.request(fr, hf.Match); success {
 			// change message to success
@@ -123,8 +124,9 @@ func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) 
 	return
 }
 
-func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regexToCheckFor) (bool success) {
+func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regexToCheckFor) (bool matched) {
 	var (
+		formatRegexp regexToCheckFor
 		resp       *http.Response
 		reader     io.Reader
 		readCloser io.ReadCloser
