@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 	"io"
-	"io/ioutil"
 )
 
 // Heka Filter plugin that can send a http request
@@ -110,6 +109,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 			values[field.GetName()] = val
 		}
 		
+	
 		hf.url = url.Parse(InterpolateString(hf.Address, values))
 		
 		if success = hf.request(fr, hf.Match); success {
@@ -124,12 +124,12 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	return
 }
 
-func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regex) (bool matched) {
+func (hf *HttpFilter) request(fr FilterRunner, regex formatRegexp) (matcherd bool) {
 	var(
 		resp       *http.Response
 		reader     io.Reader
 		readCloser io.ReadCloser
-		matched	   bool
+		error      err
 	)
 
 	req := &http.Request{
