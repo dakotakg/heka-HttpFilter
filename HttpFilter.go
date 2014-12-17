@@ -54,9 +54,9 @@ func (hf *HttpFilter) Init(config interface{}) (err error) {
 		return
 	}
 	
-	//if hf.url, err = url.Parse(hf.Address); err != nil {
-	//	return fmt.Errorf("Can't parse URL '%s': %s", hf.Address, err.Error())
-	//}
+	if hf.url, err = url.Parse(hf.Address); err != nil {
+		return fmt.Errorf("Can't parse URL '%s': %s", hf.Address, err.Error())
+	}
 	if hf.url.Scheme != "http" && hf.url.Scheme != "https" {
 		return errors.New("`address` must contain an absolute http or https URL.")
 	}
@@ -87,7 +87,6 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 		pack   *PipelinePack
 		values = make(map[string]string)
 		val    string
-		//varMatcher, _ = regexp.Compile("%\\w+%")
 	)
 
 	inChan := fr.InChan()
@@ -109,9 +108,6 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 			values[field.GetName()] = val
 		}
 		
-	        val, err = InterpolateString(hf.Address, values)
-		hf.url = url.Parse(val)
-		
 		if success = hf.request(fr, hf.Match); success {
 			// change message to success
 			pack.Message.SetType("http.success")
@@ -124,28 +120,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	return
 }
 
-// Matches the given string against the regex and returns the match result
-// and captures
-func tryMatch(re *regexp.Regexp, s string) (match bool, captures map[string]string) {
-	findResults := re.FindStringSubmatch(s)
-	if findResults == nil {
-		return
-	}
-	match = true
-	captures = make(map[string]string)
-	for index, name := range re.SubexpNames() {
-		if index == 0 {
-			continue
-		}
-		if name == "" {
-			name = fmt.Sprintf("%d", index)
-		}
-		captures[name] = findResults[index]
-	}
-	return
-}
-
-func (hf *HttpFilter) request(fr FilterRunner, regex *regexp.Regexp) (matched bool) {
+func (hf *HttpFilter) request(fr FilterRunner, re string) (matched bool) {
 	var(
 		resp       *http.Response
 		reader     io.Reader
@@ -178,7 +153,7 @@ func (hf *HttpFilter) request(fr FilterRunner, regex *regexp.Regexp) (matched bo
 		return false
 	}
 	
-	matched, err = tryMatch(regex, string(body))
+	matched, err = regexp.MatchString(re, string(body))
      
 	return matched
 }
