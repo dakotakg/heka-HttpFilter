@@ -9,6 +9,10 @@ import (
 	"github.com/mozilla-services/heka/plugins/tcp"
 	"net/url"
 	"regexp"
+	"bytes"
+	"errors"
+	"strings"
+	"time"
 )
 
 // Heka Filter plugin that can send a http request
