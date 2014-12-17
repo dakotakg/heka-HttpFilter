@@ -24,7 +24,7 @@ type HttpFilter struct {
 	url          *url.URL
 	client       *http.Client
 	useBasicAuth bool
-	Match        *regexp.Regexp
+	Match        string
 }
 
 type HttpFilterConfig struct {
