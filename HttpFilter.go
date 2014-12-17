@@ -49,10 +49,11 @@ func (hf *HttpFilter) ConfigStruct() interface{} {
 func (hf *HttpFilter) Init(config interface{}) (err error) {
 	hf.HttpFilterConfig = config.(*HttpFilterConfig)
 	
-	if hf.Match, err = regexp.Compile(hf.HttpFilterConfig.MatchRegex); err != nil {
-		err = fmt.Errorf("HttpFilter: %s", err)
-		return
-	}
+	hf.Match = hf.HttpFilterConfig.MatchRegex
+	//if hf.Match, err = regexp.Compile(hf.HttpFilterConfig.MatchRegex); err != nil {
+	//	err = fmt.Errorf("HttpFilter: %s", err)
+	//	return
+	//}
 	
 	if hf.url, err = url.Parse(hf.Address); err != nil {
 		return fmt.Errorf("Can't parse URL '%s': %s", hf.Address, err.Error())
