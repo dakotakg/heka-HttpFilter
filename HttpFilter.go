@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"net/http"
 	"github.com/mozilla-services/heka/plugins/tcp"
+	"net/url"
+	"regexp"
 )
 
 // Heka Filter plugin that can send a http request
