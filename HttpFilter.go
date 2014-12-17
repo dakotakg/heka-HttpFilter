@@ -109,7 +109,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 			values[field.GetName()] = val
 		}
 		
-	        val = InterpolateString(hf.Address, values)
+	        val, err = InterpolateString(hf.Address, values)
 		hf.url = url.Parse(val)
 		
 		if success = hf.request(fr, hf.Match); success {
