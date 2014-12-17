@@ -124,6 +124,27 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	return
 }
 
+// Matches the given string against the regex and returns the match result
+// and captures
+func tryMatch(re *regexp.Regexp, s string) (match bool, captures map[string]string) {
+	findResults := re.FindStringSubmatch(s)
+	if findResults == nil {
+		return
+	}
+	match = true
+	captures = make(map[string]string)
+	for index, name := range re.SubexpNames() {
+		if index == 0 {
+			continue
+		}
+		if name == "" {
+			name = fmt.Sprintf("%d", index)
+		}
+		captures[name] = findResults[index]
+	}
+	return
+}
+
 func (hf *HttpFilter) request(fr FilterRunner, regex *regexp.Regexp) (matched bool) {
 	var(
 		resp       *http.Response
@@ -157,7 +178,7 @@ func (hf *HttpFilter) request(fr FilterRunner, regex *regexp.Regexp) (matched bo
 		return false
 	}
 	
-	matched, err = regexp.MatchString(regex, string(body))
+	matched, err = regexp.tryMatch(regex, string(body))
      
 	return matched
 }
