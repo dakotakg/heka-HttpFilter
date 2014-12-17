@@ -12,7 +12,6 @@ import (
 	"errors"
 	"strings"
 	"time"
-	"io"
 )
 
 // Heka Filter plugin that can send a http request
