@@ -178,7 +178,7 @@ func (hf *HttpFilter) request(fr FilterRunner, regex *regexp.Regexp) (matched bo
 		return false
 	}
 	
-	matched, err = regexp.tryMatch(regex, string(body))
+	matched, err = tryMatch(regex, string(body))
      
 	return matched
 }
