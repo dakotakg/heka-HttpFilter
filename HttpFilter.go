@@ -82,7 +82,7 @@ func (hf *HttpFilter) Init(config interface{}) (err error) {
 	return
 }
 
-func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) {
+func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	var (
 		success        bool
 		pack   *PipelinePack
@@ -110,7 +110,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) 
 			values[field.GetName()] = val
 		}
 		
-		hf.url = InterpolateString(url.parse(hf.address), values)
+		hf.url = url.Parse(InterpolateString(hf.Address, values))
 		
 		if success = hf.request(fr, hf.Match); success {
 			// change message to success
@@ -124,9 +124,8 @@ func (hf *HttpFilter) Run(fr FilterRunner, h pipeline.PluginHelper) (err error) 
 	return
 }
 
-func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regexToCheckFor) (bool matched) {
-	var (
-		formatRegexp regexToCheckFor
+func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regex) (bool matched) {
+	var(
 		resp       *http.Response
 		reader     io.Reader
 		readCloser io.ReadCloser
@@ -158,7 +157,7 @@ func (hf *HttpFilter) request(fr FilterRunner, formatRegexp regexToCheckFor) (bo
 		return false
 	}
 	
-	matched, err = regexp.MatchString(regexToCheckFor, string(body))
+	matched, err = regexp.MatchString(regex, string(body))
      
 	return matched
 }
