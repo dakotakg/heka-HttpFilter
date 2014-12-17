@@ -5,6 +5,8 @@ import (
 	"github.com/mozilla-services/heka/message"
 	. "github.com/mozilla-services/heka/pipeline"
 	"strconv"
+	"net/http"
+	"github.com/mozilla-services/heka/plugins/tcp"
 )
 
 // Heka Filter plugin that can send a http request
