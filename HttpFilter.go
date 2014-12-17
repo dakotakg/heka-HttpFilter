@@ -1,3 +1,5 @@
+package HttpFilter
+
 import (
 	"fmt"
 	"github.com/mozilla-services/heka/message"
