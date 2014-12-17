@@ -1,4 +1,4 @@
-package HttpFilter
+package httpFilter
 
 import (
 	"fmt"
