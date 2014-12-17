@@ -85,7 +85,6 @@ func (hf *HttpFilter) Init(config interface{}) (err error) {
 func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	var (
 		success        bool
-		pack   *PipelinePack
 		values = make(map[string]string)
 		val    string
 	)
@@ -124,8 +123,6 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 func (hf *HttpFilter) request(fr FilterRunner, re string) (matched bool) {
 	var(
 		resp       *http.Response
-		reader     io.Reader
-		readCloser io.ReadCloser
 		err        error
 	)
 
