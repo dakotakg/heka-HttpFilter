@@ -32,6 +32,7 @@ type HttpFilter struct {
 type HttpFilterConfig struct {
 	HttpTimeout uint32 `toml:"http_timeout"`
 	Address     string
+	Method	    string
 	Headers     http.Header
 	Username    string `toml:"username"`
 	Password    string `toml:"password"`
@@ -43,7 +44,6 @@ func (hf *HttpFilter) ConfigStruct() interface{} {
 	return &HttpFilterConfig{
 		HttpTimeout: 0,
 		Headers:     make(http.Header),
-		Method:      "POST",
 	}
 }
 
@@ -106,7 +106,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 			values[field.GetName()] = val
 		}
 		
-		if success = hf.request(fr, hf.Match, values["Payload"]); success {
+		if success = hf.request(fr, hf.Match, []byte(values["Payload"])); success {
 			// change message to success
 			pack.Message.SetType("http.success")
 		} else{
