@@ -10,10 +10,8 @@ import (
 	"net/url"
 	"regexp"
 	"errors"
-	"strings"
 	"time"
 	"bytes"
-	"io"
 	"io/ioutil"
 )
 
