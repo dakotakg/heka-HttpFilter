@@ -12,6 +12,9 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"bytes"
+	"io"
+	"io/ioutil"
 )
 
 // Heka Filter plugin that can send a http request
@@ -29,7 +32,6 @@ type HttpFilter struct {
 type HttpFilterConfig struct {
 	HttpTimeout uint32 `toml:"http_timeout"`
 	Address     string
-	Method      string
 	Headers     http.Header
 	Username    string `toml:"username"`
 	Password    string `toml:"password"`
@@ -41,7 +43,7 @@ func (hf *HttpFilter) ConfigStruct() interface{} {
 	return &HttpFilterConfig{
 		HttpTimeout: 0,
 		Headers:     make(http.Header),
-		Method:      "GET",
+		Method:      "POST",
 	}
 }
 
@@ -60,10 +62,7 @@ func (hf *HttpFilter) Init(config interface{}) (err error) {
 	if hf.url.Scheme != "http" && hf.url.Scheme != "https" {
 		return errors.New("`address` must contain an absolute http or https URL.")
 	}
-	hf.Method = strings.ToUpper(hf.Method)
-	if hf.Method != "POST" && hf.Method != "GET" && hf.Method != "PUT" {
-		return errors.New("HTTP Method must be POST, GET, or PUT.")
-	}
+	hf.Method = "POST"
 	hf.client = new(http.Client)
 	if hf.HttpTimeout > 0 {
 		hf.client.Timeout = time.Duration(hf.HttpTimeout) * time.Millisecond
@@ -83,9 +82,9 @@ func (hf *HttpFilter) Init(config interface{}) (err error) {
 
 func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	var (
-		success        bool
+		success  bool
 		values = make(map[string]string)
-		val    string
+		val      string
 	)
 
 	inChan := fr.InChan()
@@ -107,7 +106,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 			values[field.GetName()] = val
 		}
 		
-		if success = hf.request(fr, hf.Match); success {
+		if success = hf.request(fr, hf.Match, values["Payload"]); success {
 			// change message to success
 			pack.Message.SetType("http.success")
 		} else{
@@ -119,7 +118,7 @@ func (hf *HttpFilter) Run(fr FilterRunner, h PluginHelper) (err error) {
 	return
 }
 
-func (hf *HttpFilter) request(fr FilterRunner, re string) (matched bool) {
+func (hf *HttpFilter) request(fr FilterRunner, re string, outBytes []byte) (matched bool) {
 	var(
 		resp       *http.Response
 		err        error
@@ -134,6 +133,9 @@ func (hf *HttpFilter) request(fr FilterRunner, re string) (matched bool) {
 	if hf.useBasicAuth {
 		req.SetBasicAuth(hf.Username, hf.Password)
 	}
+	
+	req.Body = ioutil.NopCloser(bytes.NewReader(outBytes))
+	req.ContentLength = int64(len(outBytes))
 
 	if resp, err = hf.client.Do(req); err != nil {
 		return false
